@@ -40,13 +40,21 @@ class OrderController extends Controller
         return view('orders.edit', compact('order', 'customers','products'));
     }
 
-public function update(OrderRequest $request, Order $order)
+public function update(Request $request, Order $order)
 {
 
+    $validated = $request->validate([
+        'customer_id' => 'required|exists:customers,id',
+        'order_date' => 'required|date',
+        'items' => 'required|array|min:1',
+        'items.*.product_id' => 'required|exists:products,id',
+        'items.*.unit_price' => 'required|numeric|min:0',
+        'items.*.quantity' => 'required|integer|min:1',
+    ]);
 
-       $orderService->update($order, $validated);
 
-    return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
+        $this->orderService->update($order, $validated);
+      return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
 }
 
 
