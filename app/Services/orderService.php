@@ -34,8 +34,25 @@ public function create(array $data): Order
 
     public function update(Order $order, array $data): Order
     {
-        return DB::transaction(function () use ($order, $data) {
-            $order->update($data);
+           return DB::transaction(function () use ($order, $data) {
+
+            $order->update([
+                'customer_id' => $data['customer_id'],
+                'order_date' => $data['order_date'],
+            ]);
+
+
+            $order->orderItems()->delete();
+
+
+            foreach ($data['items'] as $itemData) {
+                $order->orderItems()->create([
+                    'product_id' => $itemData['product_id'],
+                    'unit_price' => $itemData['unit_price'],
+                    'quantity' => $itemData['quantity'],
+                ]);
+            }
+
             return $order;
         });
     }
